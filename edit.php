@@ -1,23 +1,19 @@
 <?php
-require 'db.php';
-// gets id from player from url query string
-$id = $_GET['id'];
-$team_name = $_POST['team_name'];
-$position = $_POST['position'];
+session_start();
 
-// server side validation
-if (empty($team_name) || empty($position)) {
-    die("Team name and position are required.");
+// Check if the user is logged in, if not then redirect to login page
+if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
+    header("Location: login.php");
+    exit();
 }
 
-// update the team in the database
-$stmt = $pdo->prepare("UPDATE teams SET team_name = :team_name, position = :position WHERE id = :id");
-$stmt->bindParam(':team_name', $team_name);
+// Include the database connection file
+require 'db.php';
 
-if ($stmt->execute([$team_name, $position, $id])) {
+// Get the id from the url
+
+if (!isset($_GET['id'])) {
     header("Location: index.php");
     exit();
-} else {
-    die("Error updating team.");
 }
-?>
+$id = $_GET['id'];
