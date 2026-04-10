@@ -1,24 +1,27 @@
 <?php
-require 'db.php';
-// gets id from player from url query string
-$id = $_GET['id'];
-$team_name = $_POST['team_name'];
-$position = $_POST['position'];
+session_start();
 
-// server side validation
-if (empty($team_name) || empty($position)) {
-    die("Team name and position are required.");
-}
-
-// update the team in the database
-$stmt = $pdo->prepare("UPDATE teams SET team_name = :team_name, position = :position WHERE id = :id");
-$stmt->bindParam(':team_name', $team_name);
-$stmt->bindParam(':position', $position);
-$stmt->bindParam(':id', $id);
-if ($stmt->execute()) {
-    header("Location: index.php");
+// Only allow POST requests for update logic to prevent direct URL access
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header('Location: index.php');
     exit();
-} else {
-    die("Error updating team.");
 }
-?>
+
+// Check if the user is logged in, if not then redirect to login page
+if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
+    header("Location: login.php");
+    exit();
+}
+
+// Include the database connection file
+require 'db.php';
+
+// Grab data from post array
+$id = $_POST['id'] ?? null;
+$team_name = trim($_POST['team_name'] ?? '');
+$position = trim($_POST['position'] ?? '');
+$player_name = trim($_POST['player_name'] ?? '');
+
+if (!$id || $team_name === '' || $position === '' || $player_name === '') {
+    die('Missing required form data.');
+}
